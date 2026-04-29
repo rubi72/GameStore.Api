@@ -58,7 +58,15 @@ app.MapPut("/games/{id}", (int id, UpdateGameDto updatedGame) =>
     );
 });
 
-// Intentar desde la URL cambiar el nombre del titulo con parámetros, 29/04
+// GET /games/1/nombre/HolaQuePasa
+app.MapGet("/games/{id}/nombre/{newName}", (int id, string newName) =>
+{
+    var index = games.FindIndex(game => game.Id == id);
+
+    var game = games[index];
+    games[index] = new GameDto(id, newName, game.Genre, game.Price, game.ReleaseDate);
+    return Results.Ok(games[index]);
+});
 
 app.Run();
 

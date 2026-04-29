@@ -24,3 +24,6 @@ Content-Type: application/json
   "price": 9.99,
   "releaseDate": "1992-07-15"
 }
+
+###
+GET http://localhost:5067/games/1/nombre/HolaPrueba
