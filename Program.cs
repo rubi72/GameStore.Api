@@ -26,15 +26,21 @@ List<GameDto> games = [
 // GET /games 
 app.MapGet("/games", () => games);
 
+
 // GET /games/1
-app.MapGet("/games/{id}", (int id) => games.Find(game => game.Id == id))
-.WithName(GetGameEndpointName);
+app.MapGet("/games/{id}", (int id) =>
+{
+    var game = games.Find(game => game.Id == id);
+    
+    return game == null ? Results.NotFound() : Results.Ok(game);
+}).WithName(GetGameEndpointName);
+
 
 // POST /games
-app.MapPost("/games", (CreateGameDto newGame) => 
+app.MapPost("/games", (CreateGameDto newGame) =>
 {
     GameDto game1 = new(
-        games.Count +1,
+        games.Count + 1,
         newGame.Name,
         newGame.Genre,
         newGame.Price,
@@ -42,13 +48,18 @@ app.MapPost("/games", (CreateGameDto newGame) =>
     );
     games.Add(game1);
 
-    return Results.CreatedAtRoute(GetGameEndpointName, new{id = game1.Id}, newGame);
+    return Results.CreatedAtRoute(GetGameEndpointName, new { id = game1.Id }, newGame);
 });
+
 
 // PUT /games/1
 app.MapPut("/games/{id}", (int id, UpdateGameDto updatedGame) =>
 {
     var index = games.FindIndex(game2 => game2.Id == id);
+
+    if(index == -1)
+        return Results.NotFound();
+
     games[index] = new GameDto(
         id,
         updatedGame.Name,
@@ -56,17 +67,36 @@ app.MapPut("/games/{id}", (int id, UpdateGameDto updatedGame) =>
         updatedGame.Price,
         updatedGame.ReleaseDate
     );
+    
+    return Results.NoContent();
 });
+
 
 // GET /games/1/nombre/HolaQuePasa
 app.MapGet("/games/{id}/nombre/{newName}", (int id, string newName) =>
 {
     var index = games.FindIndex(game => game.Id == id);
 
+    if (index == -1)
+        return Results.NotFound();
+
     var game = games[index];
     games[index] = new GameDto(id, newName, game.Genre, game.Price, game.ReleaseDate);
     return Results.Ok(games[index]);
 });
+
+
+// DELETE /games/1
+app.MapDelete("/games/{id}", (int id) =>
+{
+    var deleteGame = games.RemoveAll(gamesT => gamesT.Id == id);
+
+    if(deleteGame == 0)
+        return Results.NotFound();
+
+    return Results.NoContent();
+});
+
 
 app.Run();
 
